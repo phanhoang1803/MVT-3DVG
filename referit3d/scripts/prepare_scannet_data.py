@@ -77,7 +77,7 @@ if __name__ == '__main__':
         global scannet, args
         scan_i = ScannetScan(scan_id, scannet, args.apply_global_alignment)
         scan_i.load_point_clouds_of_all_objects()
-        print(f'Working with scan {scan_id}')
+        # print(f'Working with scan {scan_id}')
         return scan_i
 
     if args.verbose:
@@ -94,6 +94,8 @@ if __name__ == '__main__':
     all_scans = dict()
     for i, data in enumerate(pool.imap(scannet_loader, all_scan_ids, chunksize=chunks)):
         all_scans[all_scan_ids[i]] = data
+        if i % 50 == 0:
+            print(f'{i}. Working with scan {all_scan_ids[i]}')
 
     pool.close()
     pool.join()
