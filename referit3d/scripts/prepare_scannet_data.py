@@ -77,6 +77,7 @@ if __name__ == '__main__':
         global scannet, args
         scan_i = ScannetScan(scan_id, scannet, args.apply_global_alignment)
         scan_i.load_point_clouds_of_all_objects()
+        print(f'Working with scan {scan_id}')
         return scan_i
 
     if args.verbose:
