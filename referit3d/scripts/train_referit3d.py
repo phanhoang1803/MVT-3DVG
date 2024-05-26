@@ -77,7 +77,15 @@ if __name__ == '__main__':
     for cate in class_to_idx:
         class_name_list.append(cate)
 
-    tokenizer = BertTokenizer.from_pretrained(args.bert_pretrain_path)
+    # tokenizer = BertTokenizer.from_pretrained(args.bert_pretrain_path)
+    print(f"Loading BERT tokenizer from {args.bert_pretrain_path}")
+    try:
+        tokenizer = BertTokenizer.from_pretrained(args.bert_pretrain_path)
+    except UnicodeDecodeError as e:
+        print(f"Error loading tokenizer: {e}")
+        # Add more debugging info or steps to handle the error
+        raise e
+            
     class_name_tokens = tokenizer(class_name_list, return_tensors='pt', padding=True)
     for name in class_name_tokens.data:
         class_name_tokens.data[name] = class_name_tokens.data[name].cuda()
