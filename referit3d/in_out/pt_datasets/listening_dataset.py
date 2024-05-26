@@ -100,7 +100,7 @@ class ListeningDataset(Dataset):
         res['objects'] = pad_samples(samples, self.max_context_size)
 
         # Get a mask indicating which objects have the same instance-class as the target.
-        target_class_mask = np.zeros(self.max_context_size, dtype=np.bool)
+        target_class_mask = np.zeros(self.max_context_size, dtype=bool)
         target_class_mask[:len(context)] = [target.instance_label == o.instance_label for o in context]
 
 
