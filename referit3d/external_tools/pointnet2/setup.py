@@ -14,6 +14,7 @@ _ext_sources = glob.glob("{}/src/*.cpp".format(_ext_src_root)) + glob.glob(
 _ext_headers = glob.glob("{}/include/*".format(_ext_src_root))
 
 # Ensure the necessary directories exist
+import os
 build_temp = 'build/temp.linux-x86_64-cpython-310'
 if not os.path.exists(build_temp):
     os.makedirs(build_temp)
