@@ -25,9 +25,8 @@ setup(
             #     "nvcc": ["-O2", "-I{}".format("{}/include".format(_ext_src_root))],
             # },
             extra_compile_args={
-                "cxx": ["-O2", f"-I{_ext_src_root}/include", '-Wno-deprecated-declarations'],
-                "nvcc": [
-                    "-O2", f"-I{_ext_src_root}/include", '--expt-relaxed-constexpr',
+                "cxx": ["-O2", "-I{}".format("{}/include".format(_ext_src_root)), '-Wno-deprecated-declarations'],
+                "nvcc": ["-O2", "-I{}".format("{}/include".format(_ext_src_root)), '--expt-relaxed-constexpr',
                     '-gencode=arch=compute_75,code=sm_75', '-std=c++17',
                     '-Xcompiler', '-fPIC'
                 ]
