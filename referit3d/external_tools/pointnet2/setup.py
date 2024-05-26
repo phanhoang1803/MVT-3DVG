@@ -13,6 +13,19 @@ _ext_sources = glob.glob("{}/src/*.cpp".format(_ext_src_root)) + glob.glob(
 )
 _ext_headers = glob.glob("{}/include/*".format(_ext_src_root))
 
+# Ensure the necessary directories exist
+build_temp = 'build/temp.linux-x86_64-cpython-310'
+if not os.path.exists(build_temp):
+    os.makedirs(build_temp)
+
+output_dir = 'pointnet2'
+if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
+
+# Set environment variables for the compiler
+os.environ['CC'] = 'g++'
+os.environ['CXX'] = 'g++'
+
 setup(
     name='pointnet2',
     py_modules=['pointnet2_modules', 'pointnet2_test', 'pointnet2_utils', 'pytorch_utils'],
