@@ -1,1 +1,5 @@
 pointnet2
+pointnet2_modules
+pointnet2_test
+pointnet2_utils
+pytorch_utils

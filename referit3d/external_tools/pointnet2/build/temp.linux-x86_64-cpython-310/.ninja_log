@@ -1,0 +1,10 @@
+# ninja log v5
+1	63647	1716724778629224037	/kaggle/working/MVT-3DVG/referit3d/external_tools/pointnet2/build/temp.linux-x86_64-cpython-310/_ext_src/src/ball_query_gpu.o	beb62a99a7faf30e
+2	64419	1716724779395294387	/kaggle/working/MVT-3DVG/referit3d/external_tools/pointnet2/build/temp.linux-x86_64-cpython-310/_ext_src/src/group_points_gpu.o	e3416effe23b181e
+4	64519	1716724779489303020	/kaggle/working/MVT-3DVG/referit3d/external_tools/pointnet2/build/temp.linux-x86_64-cpython-310/_ext_src/src/interpolate.o	b3c04da0dd983160
+2	64568	1716724779533307061	/kaggle/working/MVT-3DVG/referit3d/external_tools/pointnet2/build/temp.linux-x86_64-cpython-310/_ext_src/src/group_points.o	758f9243e3307281
+1	65635	1716724780610405973	/kaggle/working/MVT-3DVG/referit3d/external_tools/pointnet2/build/temp.linux-x86_64-cpython-310/_ext_src/src/bindings.o	9a8addab3dd08736
+1	66043	1716724781018443444	/kaggle/working/MVT-3DVG/referit3d/external_tools/pointnet2/build/temp.linux-x86_64-cpython-310/_ext_src/src/ball_query.o	2d6c3c8787f2ddc5
+64536	98098	1716724813084388114	/kaggle/working/MVT-3DVG/referit3d/external_tools/pointnet2/build/temp.linux-x86_64-cpython-310/_ext_src/src/sampling_gpu.o	eb2a4442220c95d8
+64419	100320	1716724815300591631	/kaggle/working/MVT-3DVG/referit3d/external_tools/pointnet2/build/temp.linux-x86_64-cpython-310/_ext_src/src/sampling.o	fd71c33e07df4f4
+63647	101636	1716724816618712676	/kaggle/working/MVT-3DVG/referit3d/external_tools/pointnet2/build/temp.linux-x86_64-cpython-310/_ext_src/src/interpolate_gpu.o	b62dc8692ce6ec22
