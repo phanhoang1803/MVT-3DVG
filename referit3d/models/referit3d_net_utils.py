@@ -124,6 +124,10 @@ def evaluate_on_dataset(model, data_loader, criteria, device, pad_idx, args, ran
 
     batch_keys = make_batch_keys(args)
 
+    # Start
+    print(data_loader)
+    # End
+    
     for batch in tqdm.tqdm(data_loader):
         # Move data to gpu
         for k in batch_keys:
@@ -164,7 +168,10 @@ def evaluate_on_dataset(model, data_loader, criteria, device, pad_idx, args, ran
             batch_guess = torch.argmax(res['lang_logits'], -1)
             cls_b_acc = torch.mean((batch_guess == batch['target_class']).double())
             txt_acc_mtr.update(cls_b_acc, batch_size)
-
+        # Start    
+        break
+        # End
+    
     metrics['test_total_loss'] = total_loss_mtr.avg
     metrics['test_referential_acc'] = ref_acc_mtr.avg
     metrics['test_object_cls_acc'] = cls_acc_mtr.avg
