@@ -9,6 +9,8 @@ import os.path as osp
 import torch.nn as nn
 from torch import optim
 from termcolor import colored
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 from referit3d.in_out.arguments import parse_arguments
 from referit3d.in_out.neural_net_oriented import load_scan_related_data, load_referential_data
@@ -17,35 +19,11 @@ from referit3d.in_out.pt_datasets.listening_dataset import make_data_loaders
 from referit3d.utils import set_gpu_to_zero_position, create_logger, seed_training_code
 from referit3d.utils.tf_visualizer import Visualizer
 from referit3d.models.referit3d_net import ReferIt3DNet_transformer
-from referit3d.models.referit3d_net_utils import single_epoch_train, evaluate_on_dataset, save_predictions_for_visualization
+from referit3d.models.referit3d_net_utils import single_epoch_train, evaluate_on_dataset
 from referit3d.models.utils import load_state_dicts, save_state_dicts
 from referit3d.analysis.deepnet_predictions import analyze_predictions
 from transformers import BertTokenizer, BertModel
 
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-
-def visualize_predictions(predictions):
-    for pred in predictions:
-        scan_id = pred['scan_id']
-        utterance = pred['utterance']
-        bboxes = pred['bboxes']
-        predicted_classes = pred['predicted_classes']
-
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-
-        # Plot the bounding boxes
-        for i, bbox in enumerate(bboxes):
-            class_label = predicted_classes[i]
-            ax.scatter(bbox[:, 0], bbox[:, 1], bbox[:, 2], label=f'Class: {class_label}', marker='o')
-
-        ax.set_xlabel('X')
-        ax.set_ylabel('Y')
-        ax.set_zlabel('Z')
-        ax.set_title(f'Scan ID: {scan_id}, Utterance: {utterance}')
-        ax.legend()
-        plt.show()
 
 def log_train_test_information():
         """Helper logging function.
@@ -74,6 +52,7 @@ def log_train_test_information():
 
 
 if __name__ == '__main__':
+    
     # Parse arguments
     args = parse_arguments()
     # Read the scan related information
@@ -179,8 +158,67 @@ if __name__ == '__main__':
             # if you fine-tune the previous epochs/accuracy are irrelevant.
             dummy = args.max_train_epochs + 1 - start_training_epoch
             print('Ready to *fine-tune* the model for a max of {} epochs'.format(dummy))
-            
-    if args.mode == 'evaluate':
+
+    # Training.
+    if args.mode == 'train':
+        train_vis = Visualizer(args.tensorboard_dir)
+        logger = create_logger(args.log_dir)
+        logger.info('Starting the training. Good luck!')
+
+        with tqdm.trange(start_training_epoch, args.max_train_epochs + 1, desc='epochs') as bar:
+            timings = dict()
+            for epoch in bar:
+                print("cnt_lr", lr_scheduler.get_last_lr())
+                # Train:
+                tic = time.time()
+                train_meters = single_epoch_train(model, data_loaders['train'], criteria, optimizer,
+                                                  device, pad_idx, args=args, tokenizer=tokenizer,epoch=epoch)
+                toc = time.time()
+                timings['train'] = (toc - tic) / 60
+
+                # Evaluate:
+                tic = time.time()
+                test_meters = evaluate_on_dataset(model, data_loaders['test'], criteria, device, pad_idx, args=args, tokenizer=tokenizer)
+                toc = time.time()
+                timings['test'] = (toc - tic) / 60
+
+                eval_acc = test_meters['test_referential_acc']
+
+                last_test_acc = eval_acc
+                last_test_epoch = epoch
+
+                lr_scheduler.step()
+
+                save_state_dicts(osp.join(args.checkpoint_dir, 'last_model.pth'),
+                                     epoch, model=model, optimizer=optimizer, lr_scheduler=lr_scheduler)
+
+                if best_test_acc < eval_acc:
+                    logger.info(colored('Test accuracy, improved @epoch {}'.format(epoch), 'green'))
+                    best_test_acc = eval_acc
+                    best_test_epoch = epoch
+
+                    save_state_dicts(osp.join(args.checkpoint_dir, 'best_model.pth'),
+                                     epoch, model=model, optimizer=optimizer, lr_scheduler=lr_scheduler)
+                else:
+                    logger.info(colored('Test accuracy, did not improve @epoch {}'.format(epoch), 'red'))
+
+                log_train_test_information()
+                train_meters.update(test_meters)
+                train_vis.log_scalars({k: v for k, v in train_meters.items() if '_acc' in k}, step=epoch,
+                                      main_tag='acc')
+                train_vis.log_scalars({k: v for k, v in train_meters.items() if '_loss' in k},
+                                      step=epoch, main_tag='loss')
+
+                bar.refresh()
+
+        with open(osp.join(args.checkpoint_dir, 'final_result.txt'), 'w') as f_out:
+            f_out.write(('Best accuracy: {:.4f} (@epoch {})'.format(best_test_acc, best_test_epoch)))
+            f_out.write(('Last accuracy: {:.4f} (@epoch {})'.format(last_test_acc, last_test_epoch)))
+
+        logger.info('Finished training successfully.')
+
+    elif args.mode == 'evaluate':
+
         meters = evaluate_on_dataset(model, data_loaders['test'], criteria, device, pad_idx, args=args, tokenizer=tokenizer)
         print('Reference-Accuracy: {:.4f}'.format(meters['test_referential_acc']))
         print('Object-Clf-Accuracy: {:.4f}'.format(meters['test_object_cls_acc']))
