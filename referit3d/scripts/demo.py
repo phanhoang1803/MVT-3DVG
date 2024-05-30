@@ -159,96 +159,18 @@ if __name__ == '__main__':
         # perhaps best_test_acc, best_test_epoch, best_test_epoch =  unpickle...
         loaded_epoch = load_state_dicts(args.resume_path, map_location=device, model=model)
         print('Loaded a model stopped at epoch: {}.'.format(loaded_epoch))
-        if not args.fine_tune:
-            print('Loaded a model that we do NOT plan to fine-tune.')
-            load_state_dicts(args.resume_path, optimizer=optimizer, lr_scheduler=lr_scheduler)
-            start_training_epoch = loaded_epoch + 1
-            start_training_epoch = 0
-            best_test_epoch = loaded_epoch
-            best_test_acc = 0
-            print('Loaded model had {} test-accuracy in the corresponding dataset used when trained.'.format(
-                best_test_acc))
-        else:
-            print('Parameters that do not allow gradients to be back-propped:')
-            ft_everything = True
-            for name, param in model.named_parameters():
-                if not param.requires_grad:
-                    print(name)
-                    exist = False
-            if ft_everything:
-                print('None, all wil be fine-tuned')
-            # if you fine-tune the previous epochs/accuracy are irrelevant.
-            dummy = args.max_train_epochs + 1 - start_training_epoch
-            print('Ready to *fine-tune* the model for a max of {} epochs'.format(dummy))
+        print('Loaded a model that we do NOT plan to fine-tune.')
+        load_state_dicts(args.resume_path, optimizer=optimizer, lr_scheduler=lr_scheduler)
+        start_training_epoch = loaded_epoch + 1
+        start_training_epoch = 0
+        best_test_epoch = loaded_epoch
+        best_test_acc = 0
+        print('Loaded model had {} test-accuracy in the corresponding dataset used when trained.'.format(
+            best_test_acc))
 
-    # Training.
-    if args.mode == 'train':
-        train_vis = Visualizer(args.tensorboard_dir)
-        logger = create_logger(args.log_dir)
-        logger.info('Starting the training. Good luck!')
 
-        with tqdm.trange(start_training_epoch, args.max_train_epochs + 1, desc='epochs') as bar:
-            timings = dict()
-            for epoch in bar:
-                print("cnt_lr", lr_scheduler.get_last_lr())
-                # Train:
-                tic = time.time()
-                train_meters = single_epoch_train(model, data_loaders['train'], criteria, optimizer,
-                                                  device, pad_idx, args=args, tokenizer=tokenizer,epoch=epoch)
-                toc = time.time()
-                timings['train'] = (toc - tic) / 60
-
-                # Evaluate:
-                tic = time.time()
-                test_meters = evaluate_on_dataset(model, data_loaders['test'], criteria, device, pad_idx, args=args, tokenizer=tokenizer)
-                toc = time.time()
-                timings['test'] = (toc - tic) / 60
-
-                eval_acc = test_meters['test_referential_acc']
-
-                last_test_acc = eval_acc
-                last_test_epoch = epoch
-
-                lr_scheduler.step()
-
-                save_state_dicts(osp.join(args.checkpoint_dir, 'last_model.pth'),
-                                     epoch, model=model, optimizer=optimizer, lr_scheduler=lr_scheduler)
-
-                if best_test_acc < eval_acc:
-                    logger.info(colored('Test accuracy, improved @epoch {}'.format(epoch), 'green'))
-                    best_test_acc = eval_acc
-                    best_test_epoch = epoch
-
-                    save_state_dicts(osp.join(args.checkpoint_dir, 'best_model.pth'),
-                                     epoch, model=model, optimizer=optimizer, lr_scheduler=lr_scheduler)
-                else:
-                    logger.info(colored('Test accuracy, did not improve @epoch {}'.format(epoch), 'red'))
-
-                log_train_test_information()
-                train_meters.update(test_meters)
-                train_vis.log_scalars({k: v for k, v in train_meters.items() if '_acc' in k}, step=epoch,
-                                      main_tag='acc')
-                train_vis.log_scalars({k: v for k, v in train_meters.items() if '_loss' in k},
-                                      step=epoch, main_tag='loss')
-
-                bar.refresh()
-
-        with open(osp.join(args.checkpoint_dir, 'final_result.txt'), 'w') as f_out:
-            f_out.write(('Best accuracy: {:.4f} (@epoch {})'.format(best_test_acc, best_test_epoch)))
-            f_out.write(('Last accuracy: {:.4f} (@epoch {})'.format(last_test_acc, last_test_epoch)))
-
-        logger.info('Finished training successfully.')
-
-    elif args.mode == 'evaluate':
-        meters = evaluate_on_dataset(model, data_loaders['test'], criteria, device, pad_idx, args=args, tokenizer=tokenizer)
-        print('Reference-Accuracy: {:.4f}'.format(meters['test_referential_acc']))
-        print('Object-Clf-Accuracy: {:.4f}'.format(meters['test_object_cls_acc']))
-        print('Text-Clf-Accuracy {:.4f}:'.format(meters['test_txt_cls_acc']))
-
-        out_file = osp.join(args.checkpoint_dir, 'test_result.txt')
-        res = analyze_predictions(model, data_loaders['test'].dataset, class_to_idx, pad_idx, device,
-                                  args, out_file=out_file,tokenizer=tokenizer)
-        print(res)
-    elif args.mode == 'vis':
+    if args.mode == 'vis':
+        del referit_data, vocab, class_to_idx, all_scans_in_dict, mean_rgb
+        del data_loaders['train']
         res = save_predictions_for_visualization(model, data_loaders['test'], device, channel_last=False)
         visualize_predictions(res)
