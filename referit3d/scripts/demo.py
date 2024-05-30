@@ -231,5 +231,5 @@ if __name__ == '__main__':
     elif args.mode == 'vis':
         # del referit_data, vocab, class_to_idx, all_scans_in_dict, mean_rgb
         # del data_loaders['train']
-        res = save_predictions_for_visualization(model, data_loaders['test'], device, channel_last=False)
+        res = save_predictions_for_visualization(model, data_loaders['test'], device, channel_last=True)
         visualize_predictions(res)
