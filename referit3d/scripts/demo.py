@@ -179,8 +179,18 @@ if __name__ == '__main__':
             # if you fine-tune the previous epochs/accuracy are irrelevant.
             dummy = args.max_train_epochs + 1 - start_training_epoch
             print('Ready to *fine-tune* the model for a max of {} epochs'.format(dummy))
+            
+    if args.mode == 'evaluate':
+        meters = evaluate_on_dataset(model, data_loaders['test'], criteria, device, pad_idx, args=args, tokenizer=tokenizer)
+        print('Reference-Accuracy: {:.4f}'.format(meters['test_referential_acc']))
+        print('Object-Clf-Accuracy: {:.4f}'.format(meters['test_object_cls_acc']))
+        print('Text-Clf-Accuracy {:.4f}:'.format(meters['test_txt_cls_acc']))
 
-    if args.mode == 'vis':
+        out_file = osp.join(args.checkpoint_dir, 'test_result.txt')
+        res = analyze_predictions(model, data_loaders['test'].dataset, class_to_idx, pad_idx, device,
+                                  args, out_file=out_file,tokenizer=tokenizer)
+        print(res)
+    elif args.mode == 'vis':
         # del referit_data, vocab, class_to_idx, all_scans_in_dict, mean_rgb
         # del data_loaders['train']
         res = save_predictions_for_visualization(model, data_loaders['test'], device, channel_last=False)
