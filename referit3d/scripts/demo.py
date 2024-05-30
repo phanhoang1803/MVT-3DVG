@@ -19,7 +19,7 @@ from referit3d.in_out.pt_datasets.listening_dataset import make_data_loaders
 from referit3d.utils import set_gpu_to_zero_position, create_logger, seed_training_code
 from referit3d.utils.tf_visualizer import Visualizer
 from referit3d.models.referit3d_net import ReferIt3DNet_transformer
-from referit3d.models.referit3d_net_utils import single_epoch_train, evaluate_on_dataset
+from referit3d.models.referit3d_net_utils import single_epoch_train, evaluate_on_dataset, save_predictions_for_visualization
 from referit3d.models.utils import load_state_dicts, save_state_dicts
 from referit3d.analysis.deepnet_predictions import analyze_predictions
 from transformers import BertTokenizer, BertModel
