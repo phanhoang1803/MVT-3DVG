@@ -249,6 +249,6 @@ if __name__ == '__main__':
         res = analyze_predictions(model, data_loaders['test'].dataset, class_to_idx, pad_idx, device,
                                   args, out_file=out_file,tokenizer=tokenizer)
         print(res)
-    elif args.mode == 'demo':
+    elif args.mode == 'vis':
         res = save_predictions_for_visualization(model, data_loaders['test'], device, channel_last=False)
         visualize_predictions(res)
