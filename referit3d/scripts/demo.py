@@ -26,7 +26,7 @@ from transformers import BertTokenizer, BertModel
 
 
 def log_train_test_information():
-        """Helper logging function.
+        """Helper logging function. 
         Note uses "global" variables defined below.
         """
         logger.info('Epoch:{}'.format(epoch))
