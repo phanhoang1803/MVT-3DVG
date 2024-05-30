@@ -229,7 +229,14 @@ if __name__ == '__main__':
                                   args, out_file=out_file,tokenizer=tokenizer)
         print(res)
     elif args.mode == 'vis':
-        # del referit_data, vocab, class_to_idx, all_scans_in_dict, mean_rgb
-        # del data_loaders['train']
+        # Debugging statement to inspect the batch data
+        for batch in data_loaders['test']:
+            print(batch.keys())  # Print the keys of the batch to check for 'scan'
+            break
+        
+        # Delete unnecessary variables to free up memory
+        del referit_data, vocab, class_to_idx, all_scans_in_dict, mean_rgb
+        del data_loaders['train']
+            
         res = save_predictions_for_visualization(model, data_loaders['test'], device, channel_last=True)
         visualize_predictions(res)
