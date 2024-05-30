@@ -74,7 +74,6 @@ def log_train_test_information():
 
 
 if __name__ == '__main__':
-    
     # Parse arguments
     args = parse_arguments()
     # Read the scan related information
@@ -159,15 +158,27 @@ if __name__ == '__main__':
         # perhaps best_test_acc, best_test_epoch, best_test_epoch =  unpickle...
         loaded_epoch = load_state_dicts(args.resume_path, map_location=device, model=model)
         print('Loaded a model stopped at epoch: {}.'.format(loaded_epoch))
-        print('Loaded a model that we do NOT plan to fine-tune.')
-        load_state_dicts(args.resume_path, optimizer=optimizer, lr_scheduler=lr_scheduler)
-        start_training_epoch = loaded_epoch + 1
-        start_training_epoch = 0
-        best_test_epoch = loaded_epoch
-        best_test_acc = 0
-        print('Loaded model had {} test-accuracy in the corresponding dataset used when trained.'.format(
-            best_test_acc))
-
+        if not args.fine_tune:
+            print('Loaded a model that we do NOT plan to fine-tune.')
+            load_state_dicts(args.resume_path, optimizer=optimizer, lr_scheduler=lr_scheduler)
+            start_training_epoch = loaded_epoch + 1
+            start_training_epoch = 0
+            best_test_epoch = loaded_epoch
+            best_test_acc = 0
+            print('Loaded model had {} test-accuracy in the corresponding dataset used when trained.'.format(
+                best_test_acc))
+        else:
+            print('Parameters that do not allow gradients to be back-propped:')
+            ft_everything = True
+            for name, param in model.named_parameters():
+                if not param.requires_grad:
+                    print(name)
+                    exist = False
+            if ft_everything:
+                print('None, all wil be fine-tuned')
+            # if you fine-tune the previous epochs/accuracy are irrelevant.
+            dummy = args.max_train_epochs + 1 - start_training_epoch
+            print('Ready to *fine-tune* the model for a max of {} epochs'.format(dummy))
 
     if args.mode == 'vis':
         # del referit_data, vocab, class_to_idx, all_scans_in_dict, mean_rgb
